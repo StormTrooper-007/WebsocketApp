@@ -38,16 +38,17 @@ public class WebSocketService extends TextWebSocketHandler{
 
        if (chatRoomName != null) {
         //Create or join the specified chatroom
-       sessionManager.createChatRoom(chatRoomName);
-        sessionManager.joinChatRoom(chatRoomName, session);
-        //if(sessionManager.checkIfChatRoomNameExist(chatRoomName)==true){
-            //sessionManager.joinChatRoom(chatRoomName, session);
-           // System.out.println(sessionManager.getChatRoomList());
-       // }else{
-        //    sessionManager.createChatRoom(chatRoomName);
-          //  sessionManager.addChatRoomName(chatRoomName);
-       // }
+       //sessionManager.createChatRoom(chatRoomName);
+        //sessionManager.joinChatRoom(chatRoomName, session);
+        if(sessionManager.checkIfChatRoomNameExist(chatRoomName)==true){
+            sessionManager.joinChatRoom(chatRoomName, session);
+            System.out.println(sessionManager.getChatRoomList());
+        }else{
+           sessionManager.createChatRoom(chatRoomName);
+           sessionManager.addChatRoomName(chatRoomName);
+           sessionManager.removeFirstCreatedSession(chatRoomName);
         }
+      }
     }
 
     @Override

@@ -35,12 +35,17 @@ public class WebSocketSessionManager {
         sessions.remove(sessionId);
     }
 
+    public void removeFirstCreatedSession(String chatRoomName){
+        chatRooms.get(chatRoomName).remove(0);
+    }
+
     public void createChatRoom(String chatRoomName){
         chatRooms.put(chatRoomName, new ArrayList<>());
     }
 
     public void joinChatRoom(String chatRoomName, WebSocketSession session){
        chatRoomSessions.addAll(chatRooms.get(chatRoomName));
+       System.out.println(chatRoomSessions);
         if(chatRoomSessions != null){
             chatRoomSessions.add(session);
         }
