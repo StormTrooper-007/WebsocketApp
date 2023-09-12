@@ -33,13 +33,15 @@ public class WebSocketService extends TextWebSocketHandler{
     public void afterConnectionEstablished(WebSocketSession session) throws Exception{
 
        sessionManager.addSession(session.getId(), session);
+       System.out.println(UsernameHandshakeInterceptor.class);
 
-       String chatRoomName = getChatroomNameFromURI(session.getUri().getQuery());
+       String userName = (String)session.getAttributes().get("username");
+       System.out.println("user"+ userName + "just joined");
 
-       if (chatRoomName != null) {
-        //Create or join the specified chatroom
-       //sessionManager.createChatRoom(chatRoomName);
-        //sessionManager.joinChatRoom(chatRoomName, session);
+       //String chatRoomName = getChatroomNameFromURI(session.getUri().getQuery());
+       
+
+       /*if (chatRoomName != null) {
         if(sessionManager.checkIfChatRoomNameExist(chatRoomName)==true){
             sessionManager.joinChatRoom(chatRoomName, session);
             System.out.println(sessionManager.getChatRoomList());
@@ -48,7 +50,7 @@ public class WebSocketService extends TextWebSocketHandler{
            sessionManager.addChatRoomName(chatRoomName);
            sessionManager.removeFirstCreatedSession(chatRoomName);
         }
-      }
+      }*/
     }
 
     @Override
@@ -79,7 +81,6 @@ public class WebSocketService extends TextWebSocketHandler{
                 String[] keyValue = param.split("=");
                 if (keyValue.length == 2 && "chatroom".equals(keyValue[0])) {
                     // Return the chatroom name if found
-                    System.out.println(keyValue[1]);
                     return keyValue[1];
                 }
             }
@@ -91,6 +92,11 @@ public class WebSocketService extends TextWebSocketHandler{
         String errorMessage = "Chatroom name is missing. Cannot send the message.";
         session.sendMessage(new TextMessage(errorMessage));
         session.close();
+    }
+
+    private void handleLeavingChat(WebSocketSession session) throws IOException{
+         String errorMessage = "user with id " + session.getId() + "just left";
+          session.sendMessage(new TextMessage(errorMessage));
     }
 
  }
