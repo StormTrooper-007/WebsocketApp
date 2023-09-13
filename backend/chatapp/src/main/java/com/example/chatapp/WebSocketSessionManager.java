@@ -45,7 +45,6 @@ public class WebSocketSessionManager {
 
     public void joinChatRoom(String chatRoomName, WebSocketSession session){
        chatRoomSessions.addAll(chatRooms.get(chatRoomName));
-       System.out.println(chatRoomSessions);
         if(chatRoomSessions != null){
             chatRoomSessions.add(session);
         }
@@ -59,7 +58,6 @@ public class WebSocketSessionManager {
          chatRoomSessions.addAll(chatRooms.get(chatRoomName));
         if (chatRoomSessions != null) {
             for (WebSocketSession chatSession : chatRoomSessions) {
-                // Send the message to all chatroom members, including the sender
                 chatSession.sendMessage(message);
             }
         }

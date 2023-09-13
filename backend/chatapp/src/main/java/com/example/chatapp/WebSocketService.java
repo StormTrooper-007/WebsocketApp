@@ -1,15 +1,10 @@
 package com.example.chatapp;
 
 import java.io.IOException;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.PongMessage;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -33,32 +28,30 @@ public class WebSocketService extends TextWebSocketHandler{
     public void afterConnectionEstablished(WebSocketSession session) throws Exception{
 
        sessionManager.addSession(session.getId(), session);
-       System.out.println(UsernameHandshakeInterceptor.class);
+       //System.out.println(UsernameHandshakeInterceptor.class);
 
        String userName = (String)session.getAttributes().get("username");
-       System.out.println("user"+ userName + "just joined");
+       String chatRoomName = (String) session.getAttributes().get("chatRoom");
+      
 
-       //String chatRoomName = getChatroomNameFromURI(session.getUri().getQuery());
-       
-
-       /*if (chatRoomName != null) {
+       if (chatRoomName != null) {
         if(sessionManager.checkIfChatRoomNameExist(chatRoomName)==true){
             sessionManager.joinChatRoom(chatRoomName, session);
-            System.out.println(sessionManager.getChatRoomList());
+            session.sendMessage(new TextMessage(userName + " just joined " + chatRoomName));
         }else{
            sessionManager.createChatRoom(chatRoomName);
+           session.sendMessage(new TextMessage("chatRoom " + chatRoomName + " created"));
            sessionManager.addChatRoomName(chatRoomName);
            sessionManager.removeFirstCreatedSession(chatRoomName);
         }
-      }*/
+      }
     }
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws IOException {
         
         String receivedMessage = message.getPayload();
-        // Broadcast the message to all connected sessions
-        String chatRoomName = getChatroomNameFromURI(session.getUri().getQuery());
+        String chatRoomName = (String) session.getAttributes().get("chatRoom");
         if(chatRoomName != null){
             sessionManager.sendMessageToChatroom(chatRoomName, new TextMessage(receivedMessage));
         }else{
@@ -69,23 +62,10 @@ public class WebSocketService extends TextWebSocketHandler{
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        // Remove the session from the session manager
-        sessionManager.removeSession(session.getId());
-    }
-
-    private String getChatroomNameFromURI(String uriQuery) {
-        if (uriQuery != null && !uriQuery.isEmpty()) {
-            // Split the query string into key-value pairs
-            String[] queryParams = uriQuery.split("&");
-            for (String param : queryParams) {
-                String[] keyValue = param.split("=");
-                if (keyValue.length == 2 && "chatroom".equals(keyValue[0])) {
-                    // Return the chatroom name if found
-                    return keyValue[1];
-                }
-            }
-        }
-        return null; 
+        String username = (String)session.getAttributes().get("username");
+        List<WebSocketSession> activeSessions = sessionManager.getChatRoomSessions();
+        
+        handleLeavingChat(activeSessions, username);
     }
 
     private void handleMissingChatroomName(WebSocketSession session) throws IOException {
@@ -94,9 +74,12 @@ public class WebSocketService extends TextWebSocketHandler{
         session.close();
     }
 
-    private void handleLeavingChat(WebSocketSession session) throws IOException{
-         String errorMessage = "user with id " + session.getId() + "just left";
-          session.sendMessage(new TextMessage(errorMessage));
+    private void handleLeavingChat(List<WebSocketSession> sessions, String username) throws IOException{
+          for(WebSocketSession s : sessions){
+          if(s.getAttributes().get(username)==null){
+          s.sendMessage(new TextMessage("user " + username + " just left"));
+        }
+      }
     }
 
  }
